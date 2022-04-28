@@ -1,0 +1,125 @@
+#代理
+export http_proxy="http://192.168.1.223:7890"
+export https_proxy="http://192.168.1.223:7890"
+export ftp_proxy="http://192.168.1.223:7890"
+
+git clone https://github.com/coolsnowwolf/lede
+cd lede
+echo 'src-git kenzo https://github.com/kenzok8/openwrt-packages.git' >> ./feeds.conf.default
+echo 'src-git small https://github.com/kenzok8/small.git' >> ./feeds.conf.default
+#echo 'src-git dockerman https://github.com/lisaac/luci-app-dockerman.git' >> ./feeds.conf.default
+git pull
+
+./scripts/feeds update -a
+./scripts/feeds install -a
+./scripts/feeds install -a
+
+echo 'src-git opluci https://github.com/openwrt/luci.git' >> ./feeds.conf.default
+./scripts/feeds update opluci
+./scripts/feeds install -p opluci luci-app-acme
+./scripts/feeds install -p opluci luci-i18n-acme-zh-cn
+
+#删除Feeds
+rm -rf ./feeds
+#编译
+git pull
+make menuconfig 
+make download -j6 V=s
+find dl -size -1024c -exec ls -l {} \;
+find dl -size -1024c -exec rm -f {} \;
+make -j1 V=s
+
+#清除
+make dirclean
+make distclean
+rm -rf tmp
+rm -f .config
+
+#转diff
+./scripts/diffconfig.sh > diffconfig
+#转.config
+cp diffconfig .config
+make defconfig
+
+packages https://github.com/coolsnowwolf/packages
+
+src-git luci https://github.com/coolsnowwolf/luci
+src-git routing https://git.openwrt.org/feed/routing.git
+src-git telephony https://git.openwrt.org/feed/telephony.git
+#src-git video https://github.com/openwrt/video.git
+#src-git targets https://github.com/openwrt/targets.git
+#src-git oldpackages http://git.openwrt.org/packages.git
+#src-link custom /usr/src/openwrt/custom-feed
+src-git kenzo https://github.com/kenzok8/openwrt-packages.git
+src-git small https://github.com/kenzok8/small.git
+src-git dockerman https://github.com/lisaac/luci-app-dockerman.git
+src-git libdocker https://github.com/lisaac/luci-lib-docker.git
+src-git maxminddb https://github.com/jerrykuku/lua-maxminddb.git
+src-git vssr https://github.com/jerrykuku/luci-app-vssr.git
+src-git openwrt https://github.com/openwrt/luci
+
+选择包
+#LuCI-Applications
+add luci-app-acme
+add luci-app-adguardhome
+remove luci-app-adbyby-plus
+add luci-app-advanced-reboot
+add luci-app-argon-config
+add luci-app-aria2
+add luci-app-bypass
+add luci-app-cifs-mount
+add luci-app-ddns
+add luci-app-diskman
+add luci-app-dockerman
+add luci-app-frpc
+add luci-app-frps
+add luci-app-hdidle
+add luci-app-kodexplorer
+add luci-app-netdata
+add luci-app-nfs
+add luci-app-passwall2
+add luci-app-qbittorrent
+add luci-app-serverchan
+add luci-app-ssr-plus
+add luci-app-store
+add luci-app-transmission
+add luci-app-turboacc
+remove luci-app-unlockneteasemusic
+add luci-app-usb-printer
+remove luci-app-uugamebooster
+add luci-app-vssr
+add luci-app-watchcat
+remove luci-app-xlnetacc
+remove luci-app-zerotier
+
+#LuCI-Collections
+add luci-nginx
+add luci-ssl-nginx
+
+#LuCI-Themes
+add luci-theme-argon
+add luci-theme-neobird
+add luci-theme-tomato
+
+#Utilities-Editors
+add nano-full
+#Utilities-Virtualization
+add qemu-ga
+#Utilities
+add docker-compose
+add mc
+
+#Network-BitTorrent
+transmission-remote-openssl
+transmission-deamon-openssl
+transmission-web
+transmission-web-contorrent
+#Network
+acme-dnsapi
+#Network-Web
+add nginx-all-module
+remove nginx-ssl
+
+#Kernel-modules-USB Support
+add kmod-usb2
+add kmod-usb3
